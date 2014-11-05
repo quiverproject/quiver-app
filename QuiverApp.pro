@@ -1,13 +1,27 @@
-TEMPLATE = app
+QT       += core network gui sql qml quick
 
-QT += qml quick widgets
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+
+TARGET = Quiver
+TEMPLATE = app
+CONFIG += c++11
+
+include(Quiver/Quiver.pri)
+
 
 SOURCES += main.cpp
 
-RESOURCES += qml.qrc
+OTHER_FILES += \
+    qml/osx/main.qml \
+    qml/osx/MainUI.qml \
+    qml/osx/MainMenu.qml
 
-# Additional import path used to resolve QML modules in Qt Creator's code model
-QML_IMPORT_PATH =
+# Add more folders to ship with the application, here
+folder_01.source = qml/osx
+folder_01.target = qml
+DEPLOYMENTFOLDERS = folder_01
 
 # Default rules for deployment.
 include(deployment.pri)
+
+INCLUDEPATH += common
