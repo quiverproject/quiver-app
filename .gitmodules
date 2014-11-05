@@ -1,0 +1,3 @@
+[submodule "Quiver"]
+	path = Quiver
+	url = git@github.com:quiverproject/quiver.git
