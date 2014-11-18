@@ -3,17 +3,17 @@ import QtQuick.Controls 1.1
 
 ApplicationWindow { id: main
 	Item { id: env
-property var type: "desktop"
- property var os: "osx"
- property var displayName: '27" Cinema Display'
- property var screenMode: "windowable" // or "dedicated" i.e. phone etc.
- property var widthReal: 650  // mm  -- FIX: these measurements are device size not display size.
- property var heightReal: 491 // mm
- property var widthTruePixels: 2560  // May be higher regular pixels for retina
- property var heightTruePixels: 1440
- property var widthPixels: 2560
- property var heightPixels: 1440
- property var scale: 1.0
+property var type: "mobile"
+ property var os: "ios"
+ property var name: "iPhone 6 Plus"
+ property var mode: "dedicated"
+ property var widthPoints: 414
+ property var heightPoints: 736
+ property var widthPixels: 1241
+ property var heightPixels: 2208
+ property var widthDevicePixels: 1080
+ property var heightDevicePixels: 1920
+ property var pixelDensity: 401
 
 	}
         property string sourceFileName: "MainUI.qml"
@@ -22,6 +22,9 @@ property var type: "desktop"
         visible: true
         
         menuBar: mainMenuLoader.item
+
+        width: 1024
+        height: 768
 
         Connections {
                 target: quiver

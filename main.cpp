@@ -3,7 +3,7 @@
 
 #include "Quiver.h"
 
-//#include "goathubclient.h"
+#include "quiverlauncher.h"
 
 int main(int argc, char *argv[]) {
         QApplication app(argc, argv);
@@ -23,8 +23,8 @@ int main(int argc, char *argv[]) {
 
         Quiver quiver;
 
-        //auto client = new GoatHubClient;
-        //quiver.addProperty("instance", client);
+        auto client = new QuiverLauncher;
+        quiver.addProperty("instance", client);
 
         quiver.setSource("qml");
 

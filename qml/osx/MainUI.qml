@@ -24,8 +24,8 @@ import QtQuick.Layouts 1.1
         // }
 
         ListView { id: projectList
-            // model: quiverProjectModel
-            model: 20 // FIXME: Remove when model is ready
+            model: instance.projects
+            //model: 20 // FIXME: Remove when model is ready
             delegate: projectListItemDelegate
             anchors.top: toolBar.bottom
             anchors.bottom: parent.bottom
@@ -52,9 +52,16 @@ import QtQuick.Layouts 1.1
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.leftMargin: 22
                     anchors.rightMargin: 22
-                    text: "Test Project managed by Quiver"
+                    text: modelData.name
                     font.pixelSize: 44
                     color: "#222"
+                }
+                Repeater {
+                        model: modelData.platforms
+                        anchors.verticalCenter: parent.verticalCenter
+                        Text {
+                                text: modelData.name
+                        }
                 }
             }
         }

@@ -9,7 +9,9 @@ CONFIG += c++11
 include(Quiver/Quiver.pri)
 
 
-SOURCES += main.cpp
+SOURCES += main.cpp \
+    quiverlauncher.cpp \
+    project.cpp
 
 OTHER_FILES += \
     qml/osx/main.qml \
@@ -25,3 +27,7 @@ DEPLOYMENTFOLDERS = folder_01
 include(deployment.pri)
 
 INCLUDEPATH += common
+
+HEADERS += \
+    quiverlauncher.h \
+    project.h
