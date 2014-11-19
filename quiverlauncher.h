@@ -6,6 +6,10 @@
 
 #include "project.h"
 
+#ifdef Q_OS_MAC
+#include "macurlconvert.h"
+#endif
+
 class QuiverLauncher : public QObject
 {
         Q_OBJECT
@@ -16,6 +20,8 @@ public:
 signals:
         void projectsChanged();
 public slots:
+        void fileDropped(const QList<QUrl> &urls);
+        void addProject(Project *project);
 private:
          QList<QObject *> m_projects;
 };

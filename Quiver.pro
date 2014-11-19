@@ -31,3 +31,9 @@ INCLUDEPATH += common
 HEADERS += \
     quiverlauncher.h \
     project.h
+
+macx {
+HEADERS += macurlconvert.h
+OBJECTIVE_SOURCES += macurlconvert.mm
+LIBS += -framework Foundation
+}
