@@ -22,8 +22,10 @@ signals:
 public slots:
         void fileDropped(const QList<QUrl> &urls);
         void addProject(Project *project);
+        void launch(const QString &project_id);
 private:
-         QList<QObject *> m_projects;
+        QList<QObject *> m_projects;
+        void addProjectWithDirpath(QString dirpath);
 };
 
 #endif // QUIVERLAUNCHER_H

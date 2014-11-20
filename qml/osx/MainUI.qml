@@ -39,7 +39,7 @@ DragAndDropArea { id: root
         Component { id: projectListItemDelegate
                 Rectangle { id: projectItem
                         width: parent.width
-                        height: 88
+                        height: 300
                         MouseArea { id: projectMouse
                                 anchors.fill: parent
                                 hoverEnabled: true
@@ -48,20 +48,47 @@ DragAndDropArea { id: root
                                 } // FIXME: Implement behavior and connect data for selected Quiver projects
                         }
                         Text { id: projectName
-                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.top: parent.top
                                 anchors.leftMargin: 22
                                 anchors.rightMargin: 22
                                 text: modelData.name
                                 font.pixelSize: 44
                                 color: "#222"
                         }
-                        Row {
+                        Button {
+                                x: 250
+                                text: "Launch"
+                                onClicked: instance.launch(modelData.id)
+                        }
+
+                        RowLayout {
+                                anchors.top: projectName.bottom
                                 Repeater {
                                         model: modelData.platforms
-                                        CheckBox {
-                                                text: modelData.name
-                                                checked: modelData.enabled
-                                                onClicked: modelData.setEnabled(checked)
+                                        ColumnLayout {
+                                                CheckBox {
+                                                        id: osCheckBox
+                                                        checked: modelData.enabled
+                                                        onClicked: modelData.setEnabled(checked)
+                                                        style: CheckBoxStyle {
+                                                                label: Text {
+                                                                        text: modelData.name
+                                                                        font.bold: true
+                                                                }
+                                                        }
+                                                }
+                                                ColumnLayout {
+                                                        anchors.top: osCheckBox.bottom
+                                                        Repeater {
+                                                                model: modelData.configs
+                                                                CheckBox {
+                                                                        text: modelData.name
+                                                                        checked: modelData.enabled
+                                                                        onClicked: modelData.setEnabled(checked)
+                                                                        enabled: osCheckBox.checked
+                                                                }
+                                                        }
+                                                }
                                         }
                                 }
                         }
