@@ -8,16 +8,22 @@ import common 1.0
 DragAndDropArea { id: root
         anchors.fill: parent
 
-        Rectangle{ id: toolBar
-                width: parent.width
-                height: 44
-                color: "#DDD"
-                Button {
-                        Layout.fillWidth: true
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: "Add New Qt Project"
-                }
+        Component.onCompleted: {
+                main.width = 1024;
+                main.height = 768;
+                main.title = "Quiver";
         }
+
+//        Rectangle{ id: toolBar
+//                width: parent.width
+//                height: 44
+//                color: "#DDD"
+//                Button {
+//                        Layout.fillWidth: true
+//                        anchors.verticalCenter: parent.verticalCenter
+//                        text: "Add New Qt Project"
+//                }
+//        }
 
         ListView { id: projectList
                 model: instance.projects
@@ -26,9 +32,10 @@ DragAndDropArea { id: root
                         onProjectsChanged: console.log("Projects list changed!")
                 }
                 delegate: projectListItemDelegate
-                anchors.top: toolBar.bottom
-                anchors.bottom: parent.bottom
+                //anchors.top: toolBar.bottom
+                //anchors.bottom: parent.bottom
                 width: parent.width
+                height: parent.height
                 clip: true
                 // FIXME: Insert animation declarations here
                 // add: Transition { }

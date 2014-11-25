@@ -21,11 +21,21 @@ signals:
         void projectsChanged();
 public slots:
         void fileDropped(const QList<QUrl> &urls);
+        void addProjectWithDirpath(QString dirpath);
+        void addProjectWithUrl(QUrl url);
         void addProject(Project *project);
         void launch(const QString &project_id);
+private slots:
+        void read_process();
+        void launch_next_process();
+        void process_finished();
 private:
         QList<QObject *> m_projects;
-        void addProjectWithDirpath(QString dirpath);
+        QProcess *process = nullptr;
+        QString process_out;
+        typedef QHash<QString,QString> Process_Template;
+        QList<Process_Template> processes_to_launch;
+        QString builddirpath;
 };
 
 #endif // QUIVERLAUNCHER_H

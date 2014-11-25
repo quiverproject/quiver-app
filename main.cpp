@@ -1,6 +1,8 @@
 #include <QApplication>
 #include <QDir>
 
+#include "qml/BSComponents/mactoolbar.h"
+
 #include "Quiver.h"
 
 #include "quiverlauncher.h"
@@ -20,6 +22,8 @@ int main(int argc, char *argv[]) {
         QDir::setCurrent("../../../../quiver-app");
         //
 #endif
+
+        MacToolBar::registerTypes();
 
         Quiver quiver;
 

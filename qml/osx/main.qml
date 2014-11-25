@@ -2,29 +2,17 @@ import QtQuick 2.2
 import QtQuick.Controls 1.1
 
 ApplicationWindow { id: main
-	Item { id: env
-property var type: "mobile"
- property var os: "ios"
- property var name: "iPhone 6 Plus"
- property var mode: "dedicated"
- property var widthPoints: 414
- property var heightPoints: 736
- property var widthPixels: 1241
- property var heightPixels: 2208
- property var widthDevicePixels: 1080
- property var heightDevicePixels: 1920
- property var pixelDensity: 401
+        Item { id: env
 
-	}
+        }
         property string sourceFileName: "MainUI.qml"
         property string menuFileName: "MainMenu.qml"
+        property string toolBarFileName: "MainToolBar.qml"
 
         visible: true
-        
-        menuBar: mainMenuLoader.item
 
-        width: 1024
-        height: 768
+        menuBar: mainMenuLoader.item
+        toolBar: toolBarLoader.item
 
         Connections {
                 target: quiver
@@ -42,5 +30,9 @@ property var type: "mobile"
 
         Loader { id: mainMenuLoader
                 source: menuFileName
+        }
+
+        Loader { id: toolBarLoader
+                source: toolBarFileName
         }
 }

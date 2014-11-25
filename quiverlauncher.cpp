@@ -16,6 +16,10 @@ void QuiverLauncher::fileDropped(const QList<QUrl> &urls) {
         }
 }
 
+void QuiverLauncher::addProjectWithUrl(QUrl url) {
+        return addProjectWithDirpath(url.toLocalFile());
+}
+
 void QuiverLauncher::addProjectWithDirpath(QString dirpath) {
         QFileInfo info(dirpath);
         //if this is a .pro file, switch to using the directory containing it
@@ -117,20 +121,8 @@ void QuiverLauncher::launch(const QString &project_id) {
         }
 
 
-        //read mainqmltemplate
-        QFile mainqmltemplatefile(QString("%1/Quiver/mainqmltemplate").arg(project->id()));
-        if (!mainqmltemplatefile.exists()) {
-                qDebug() << this << "fatal: mainqmltemplate does not exist in project directory's Quiver directory";
-                return;
-        }
-        mainqmltemplatefile.open(QIODevice::ReadOnly);
-        QTextStream stream(&mainqmltemplatefile);
-        QString mainqmltemplate = stream.readAll();
-        mainqmltemplatefile.close();
-
-
         //build the project
-        QString builddirpath = QString("%1/../build-quiver-%2").arg(project->id()).arg(project->name());
+        builddirpath = QString("%1/../build-quiver-%2").arg(project->id()).arg(project->name());
         QDir builddir(builddirpath);
         if (!builddir.exists()) builddir.mkpath(builddir.path());
 
@@ -152,6 +144,7 @@ void QuiverLauncher::launch(const QString &project_id) {
         make_process.waitForFinished();
 
         //launch an instance of the project with each checked platform and config
+        processes_to_launch.clear();
         foreach (QObject *o, project->platforms()) {
                 auto platform = qobject_cast<Platform *>(o);
                 if (!platform) continue;
@@ -162,43 +155,99 @@ void QuiverLauncher::launch(const QString &project_id) {
                         if (!config) continue;
                         if (!config->enabled()) continue;
 
-                        QString qml = mainqmltemplate;
-                        QFile config_file(QString("%1/Quiver/config/%2.conf").arg(project->id()).arg(config->id()));
-                        if (!config_file.open(QIODevice::ReadOnly)) {
-                                qDebug() << this << "fatal: could not open config file";
-                                return;
-                        }
-                        QTextStream stream(&config_file);
-                        QString config_string;
-                        while (!stream.atEnd()) {
-                                QString line = stream.readLine();
-                                config_string += "property var "+line+"\n";
-                        }
-                        config_file.close();
-                        qml.replace("QUIVERENV", config_string);
-
-                        QDir platformdir(QString("%1/qml/%2").arg(project->id()).arg(platform->name()));
-                        if (!platformdir.exists()) {
-                                qDebug() << this << "fatal: platform dir" << platform->name() << "does not exist";
-                                return;
-                        }
-                        QString main_qml_filepath = QString("%1/main.qml").arg(platformdir.path());
-                        QFile main_qml_file(main_qml_filepath);
-                        if (!main_qml_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-                                qDebug() << this << "fatal: can not open main qml file" << main_qml_filepath << "for writing";
-                                return;
-                        }
-                        QTextStream outstream(&main_qml_file);
-                        outstream << qml;
-                        main_qml_file.close();
-
-                        //FIXME
-                        //$ENV{Quiver_platformName} = $platform;
-
-                        QString executable_dirpath = QString("%1/%2.app/Contents/MacOS").arg(builddir.path()).arg(project->name());
-                        QProcess::startDetached(QString("%1/%2").arg(executable_dirpath).arg(project->name())
-                                                , QStringList()
-                                                , executable_dirpath);
+                        Process_Template process_template;
+                        process_template["project_id"] = project->id();
+                        process_template["project_name"] = project->name();
+                        process_template["config_id"] = config->id();
+                        process_template["platform_name"] = platform->name();
+                        processes_to_launch << process_template;
                 }
         }
+
+        launch_next_process();
+}
+
+void QuiverLauncher::launch_next_process() {
+        if (!processes_to_launch.size()) {
+                return;
+        }
+
+        Process_Template process_template = processes_to_launch.takeFirst();
+
+        QString project_id = process_template.value("project_id");
+        QString project_name = process_template.value("project_name");
+        QString config_id = process_template.value("config_id");
+        QString platform_name = process_template.value("platform_name");
+
+
+        //read mainqmltemplate
+        QFile mainqmltemplatefile(QString("%1/Quiver/mainqmltemplate").arg(project_id));
+        if (!mainqmltemplatefile.exists()) {
+                qDebug() << this << "fatal: mainqmltemplate does not exist in project directory's Quiver directory";
+                return;
+        }
+        mainqmltemplatefile.open(QIODevice::ReadOnly);
+        QTextStream maintemplatestream(&mainqmltemplatefile);
+        QString mainqmltemplate = maintemplatestream.readAll();
+        mainqmltemplatefile.close();
+
+
+        QString qml = mainqmltemplate;
+        QFile config_file(QString("%1/Quiver/config/%2.conf").arg(project_id).arg(config_id));
+        if (!config_file.open(QIODevice::ReadOnly)) {
+                qDebug() << this << "fatal: could not open config file";
+                return;
+        }
+        QTextStream configstream(&config_file);
+        QString config_string;
+        while (!configstream.atEnd()) {
+                QString line = configstream.readLine();
+                config_string += "property var "+line+"\n";
+        }
+        config_file.close();
+        qml.replace("QUIVERENV", config_string);
+
+        QDir platformdir(QString("%1/qml/%2").arg(project_id).arg(platform_name));
+        if (!platformdir.exists()) {
+                qDebug() << this << "fatal: platform dir" << platform_name << "does not exist";
+                return;
+        }
+        QString main_qml_filepath = QString("%1/main.qml").arg(platformdir.path());
+        QFile main_qml_file(main_qml_filepath);
+        if (!main_qml_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+                qDebug() << this << "fatal: can not open main qml file" << main_qml_filepath << "for writing";
+                return;
+        }
+        QTextStream outstream(&main_qml_file);
+        outstream << qml;
+        main_qml_file.close();
+
+        QString executable_dirpath = QString("%1/%2.app/Contents/MacOS").arg(builddirpath).arg(project_name);
+        QString program = QString("%1/%2").arg(executable_dirpath).arg(project_name);
+        QStringList environment; environment << QString("%1=%2").arg("Quiver_platformName").arg(platform_name);
+
+        process = new QProcess;
+        connect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(read_process()));
+        connect(process, SIGNAL(finished(int)), this, SLOT(process_finished()));
+        process->setWorkingDirectory(executable_dirpath);
+        process->setProgram(program);
+        process->setEnvironment(environment);
+        process->start();
+        process->waitForStarted();
+}
+
+void QuiverLauncher::read_process() {
+        if (!process) return;
+        process_out.append(process->readAllStandardOutput());
+        if (process_out.contains("Quiver: main.qml loaded")) {
+                disconnect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(read_process()));
+                process_out.clear();
+                launch_next_process();
+        }
+}
+
+void QuiverLauncher::process_finished() {
+        auto process = qobject_cast<QProcess *>(QObject::sender());
+        if (!process) return;
+        process->deleteLater();
 }

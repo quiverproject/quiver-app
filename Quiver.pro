@@ -1,4 +1,5 @@
 QT       += core network gui sql qml quick
+macx: QT += macextras
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -16,7 +17,8 @@ SOURCES += main.cpp \
 OTHER_FILES += \
     qml/osx/main.qml \
     qml/osx/MainUI.qml \
-    qml/osx/MainMenu.qml
+    qml/osx/MainMenu.qml \
+    qml/osx/MainToolBar.qml
 
 # Add more folders to ship with the application, here
 folder_01.source = qml/osx
@@ -35,5 +37,15 @@ HEADERS += \
 macx {
 HEADERS += macurlconvert.h
 OBJECTIVE_SOURCES += macurlconvert.mm
+LIBS += -framework Foundation
+}
+
+#for BSComponents
+macx {
+
+HEADERS += qml/BSComponents/mactoolbutton.h \
+    qml/BSComponents/mactoolbar.h
+SOURCES += qml/BSComponents/mactoolbutton.cpp
+OBJECTIVE_SOURCES += qml/BSComponents/mactoolbar.mm
 LIBS += -framework Foundation
 }
