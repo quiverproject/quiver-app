@@ -67,6 +67,11 @@ DragAndDropArea { id: root
                                 text: "Launch"
                                 onClicked: instance.launch(modelData.id)
                         }
+                        Button {
+                                x: 350
+                                text: "Baleet"
+                                onClicked: instance.remove(modelData.id)
+                        }
 
                         RowLayout {
                                 anchors.top: projectName.bottom

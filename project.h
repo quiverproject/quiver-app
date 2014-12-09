@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QDebug>
+#include <QMetaType>
 
 class Config : public QObject {
         Q_OBJECT
@@ -21,14 +22,13 @@ public:
               , m_id(id)
               , m_enabled(enabled)
         {
-                connect(this, &Config::enabledChanged, [=]() {
-                        qDebug() << m_name << m_id << m_enabled;
-                });
         }
+        Config(QHash<QString, QVariant> hash);
         QString name() const { return m_name; }
         QString os() const { return m_os; }
         QString id() const { return m_id; }
         bool enabled() const { return m_enabled; }
+        QHash<QString, QVariant> serialize();
 public slots:
         void setName(const QString &arg) { m_name = arg; emit nameChanged(); }
         void setOs(const QString &arg) { m_os = arg; emit osChanged(); }
@@ -58,17 +58,26 @@ public:
               , m_name(name)
               , m_enabled(enabled)
         {
-                connect(this, &Platform::enabledChanged, [=]() {
-                        qDebug() << m_name << m_enabled;
-                });
         }
+        Platform(QHash<QString, QVariant> hash);
         QString name() const { return m_name; }
         bool enabled() const { return m_enabled; }
-        QList<QObject *> configs() const { return m_configs; }
+        QList<QObject *> configs() const {
+                QList<QObject *> retval;
+                foreach (auto object, m_configs) {
+                        retval << object;
+                }
+                return retval;
+        }
+        QHash<QString, QVariant> serialize();
 public slots:
         void setName(const QString &arg) { m_name = arg; emit nameChanged(); }
         void setEnabled(const bool &arg) { m_enabled = arg; emit enabledChanged(); }
-        void addConfig(Config *arg) { m_configs << arg; emit configsChanged(); }
+        void addConfig(Config *arg) {
+                m_configs << arg;
+                emit configsChanged();
+                connect(arg, SIGNAL(enabledChanged()), this, SIGNAL(configsChanged()));
+        }
 signals:
         void nameChanged();
         void enabledChanged();
@@ -76,7 +85,7 @@ signals:
 private:
         QString m_name;
         bool m_enabled;
-        QList<QObject *> m_configs;
+        QList<Config *> m_configs;
 };
 
 class Project : public QObject {
@@ -92,13 +101,26 @@ public:
               , m_id(id)
         {
         }
+        Project(QHash<QString, QVariant> hash);
         QString name() const { return m_name; }
         QString id() const { return m_id; }
-        QList<QObject *> platforms() const { return m_platforms; }
+        QList<QObject *> platforms() const {
+                QList<QObject *> retval;
+                foreach (auto object, m_platforms) {
+                        retval << object;
+                }
+                return retval;
+        }
+        QHash<QString, QVariant> serialize();
 public slots:
         void setName(const QString &arg) { m_name = arg; emit nameChanged(); }
         void setId(const QString &arg) { m_id = arg; emit idChanged(); }
-        void addPlatform(Platform *arg) { m_platforms << arg; emit platformsChanged(); }
+        void addPlatform(Platform *arg) {
+                m_platforms << arg;
+                emit platformsChanged();
+                connect(arg, SIGNAL(enabledChanged()), this, SIGNAL(platformsChanged()));
+                connect(arg, SIGNAL(configsChanged()), this, SIGNAL(platformsChanged()));
+        }
 signals:
         void nameChanged();
         void idChanged();
@@ -106,7 +128,7 @@ signals:
 private:
         QString m_name;
         QString m_id;
-        QList<QObject *> m_platforms;
+        QList<Platform *> m_platforms;
 };
 
 #endif // PROJECT_H

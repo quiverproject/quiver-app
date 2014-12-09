@@ -2,7 +2,22 @@
 
 QuiverLauncher::QuiverLauncher(QObject *parent) : QObject(parent)
 {
-        //FIXME load projects list from QSettings and run them through addProjectWithDirpath()
+        settings = new QSettings;
+        //settings->clear();
+        QVariantList variants = settings->value("projects").value<QVariantList>();
+        foreach (const QVariant &variant, variants) {
+                auto project = new Project(variant.value<QHash<QString, QVariant>>());
+                connect(project, SIGNAL(platformsChanged()), this, SIGNAL(projectsChanged()));
+                m_projects << project;
+        }
+
+        connect(this, &QuiverLauncher::projectsChanged, [=](){
+                QVariantList projects;
+                foreach (auto project, m_projects) {
+                        projects << project->serialize();
+                }
+                settings->setValue("projects", projects);
+        });
 }
 
 void QuiverLauncher::fileDropped(const QList<QUrl> &urls) {
@@ -14,6 +29,11 @@ void QuiverLauncher::fileDropped(const QList<QUrl> &urls) {
                 QString dirpath = url.toLocalFile();
                 addProjectWithDirpath(dirpath);
         }
+}
+
+void QuiverLauncher::addProject(Project *project) {
+        m_projects << project;
+        emit projectsChanged();
 }
 
 void QuiverLauncher::addProjectWithUrl(QUrl url) {
@@ -48,7 +68,14 @@ void QuiverLauncher::addProjectWithDirpath(QString dirpath) {
         if (!found_quiver) return;
         if (found_pro_files != 1) return;
 
-        auto project = new Project(directory.dirName(), directory.path());
+        QString id = directory.path();
+        foreach (auto project, m_projects) {
+                if (project->id() == id) {
+                        qDebug() << this << "project already exists";
+                        return;
+                }
+        }
+        auto project = new Project(directory.dirName(), id);
 
         //add platforms to project
         QDir qmldir(dirpath + "/qml");
@@ -95,11 +122,17 @@ void QuiverLauncher::addProjectWithDirpath(QString dirpath) {
         addProject(project);
 }
 
-void QuiverLauncher::addProject(Project *project) {
-        m_projects << project;
+
+void QuiverLauncher::remove(const QString &project_id) {
+        QList<Project *> new_projects;
+        foreach (auto project, m_projects) {
+                if (project->id() != project_id) {
+                        new_projects << project;
+                }
+        }
+        m_projects = new_projects;
         emit projectsChanged();
 }
-
 
 void QuiverLauncher::launch(const QString &project_id) {
         QString qmake_path = QString("%1/Qt/5.3/clang_64/bin/qmake").arg(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)); //FIXME let the user configure it somehow (20141125)
