@@ -135,7 +135,7 @@ void QuiverLauncher::remove(const QString &project_id) {
 }
 
 void QuiverLauncher::launch(const QString &project_id) {
-        QString qmake_path = QString("%1/Qt/5.3/clang_64/bin/qmake").arg(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)); //FIXME let the user configure it somehow (20141125)
+        QString qmake_path = QString("%1/Qt/5.4/clang_64/bin/qmake").arg(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)); //FIXME let the user configure it somehow (20141125)
 
         //look up the project object based on the project_id
         Project *project = nullptr;
