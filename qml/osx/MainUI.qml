@@ -51,7 +51,7 @@ DragAndDropArea { id: root
                                 anchors.fill: parent
                                 hoverEnabled: true
                                 onClicked: {
-                                        parent.color = "blue"
+                                        parent.color = "#116CD6"
                                 } // FIXME: Implement behavior and connect data for selected Quiver projects
                         }
                         Text { id: projectName
@@ -69,7 +69,7 @@ DragAndDropArea { id: root
                         }
                         Button {
                                 x: 350
-                                text: "Baleet"
+                                text: "Delete"
                                 onClicked: instance.remove(modelData.id)
                         }
 
