@@ -134,11 +134,9 @@ void QuiverLauncher::remove(const QString &project_id) {
         emit projectsChanged();
 }
 
-void QuiverLauncher::launch(const QString &project_id) {
-        QString qmake_path = QString("%1/Qt/5.4/clang_64/bin/qmake").arg(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)); //FIXME let the user configure it somehow (20141125)
-
-        //look up the project object based on the project_id
+Project *QuiverLauncher::get_project_from_project_id(const QString &project_id) {
         Project *project = nullptr;
+
         foreach (QObject *o, m_projects) {
                 auto p = qobject_cast<Project *>(o);
                 if (!p) continue;
@@ -147,6 +145,68 @@ void QuiverLauncher::launch(const QString &project_id) {
                         break;
                 }
         }
+
+        return project;
+}
+
+QStringList QuiverLauncher::get_files_in_dir_recursive(const QString &dirpath) {
+        QStringList filepaths;
+
+        QDirIterator it(dirpath, QDirIterator::Subdirectories);
+        while (it.hasNext()) {
+                QString the_file = it.next();
+                QFileInfo the_file_info(the_file);
+                if (the_file_info.isFile()) {
+                        filepaths << the_file;
+                }
+        }
+        qSort(filepaths);
+
+        return filepaths;
+}
+
+void QuiverLauncher::deploy(const QString &project_id) {
+        Project *project = get_project_from_project_id(project_id);
+        if (!project) {
+                qDebug() << this << "deploy(): fatal: project id" << project_id << "not found!";
+                return;
+        }
+
+        QString qmldirpath = QString("%1/qml").arg(project->id());
+        QDir qmldir(qmldirpath);
+        if (!qmldir.exists()) {
+                qDebug() << this << "deploy(): fatal: qml dir in project id" << project->id() << "not found!";
+                return;
+        }
+
+        QStringList filepaths = get_files_in_dir_recursive(qmldirpath);
+        QStringList relative_filepaths;
+        foreach (QString filepath, filepaths) {
+                relative_filepaths << "qml"+filepath.replace(qmldirpath, "");
+        }
+
+        QFile qrc_file(QString("%1/Quiver.qrc").arg(project_id));
+        if (!qrc_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+                qDebug() << this << "deploy(): fatal: cannot open output qrc file" << qrc_file.fileName();
+                return;
+        }
+
+        QTextStream stream(&qrc_file);
+        stream << "<RCC><qresource prefix=\"/\">\n";
+        foreach (const QString &filepath, relative_filepaths) {
+                stream << QString("<file>%1</file>").arg(filepath);
+                stream << "\n";
+        }
+        stream << "</qresource></RCC>\n";
+
+        qrc_file.close();
+}
+
+void QuiverLauncher::launch(const QString &project_id) {
+        QString qmake_path = QString("%1/Qt/5.4/clang_64/bin/qmake").arg(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)); //FIXME let the user configure it somehow (20141125)
+
+        //look up the project object based on the project_id
+        Project *project = get_project_from_project_id(project_id);
         if (!project) {
                 qDebug() << this << "launch(): fatal: project id" << project_id << "not found!";
                 return;

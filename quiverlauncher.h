@@ -32,6 +32,7 @@ public slots:
         void addProject(Project *project);
         void launch(const QString &project_id);
         void remove(const QString &project_id);
+        void deploy(const QString &project_id);
 private slots:
         void read_process();
         void launch_next_process();
@@ -44,6 +45,8 @@ private:
         QList<Process_Template> processes_to_launch;
         QString builddirpath;
         QSettings *settings;
+        Project *get_project_from_project_id(const QString &project_id);
+        QStringList get_files_in_dir_recursive(const QString &dirpath);
 };
 
 #endif // QUIVERLAUNCHER_H

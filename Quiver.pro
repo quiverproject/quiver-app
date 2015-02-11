@@ -49,3 +49,6 @@ SOURCES += qml/BSComponents/mactoolbutton.cpp
 OBJECTIVE_SOURCES += qml/BSComponents/mactoolbar.mm
 LIBS += -framework Foundation
 }
+
+RESOURCES += \
+    Quiver.qrc

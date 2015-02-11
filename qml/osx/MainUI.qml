@@ -69,6 +69,11 @@ DragAndDropArea { id: root
                         }
                         Button {
                                 x: 350
+                                text: "Deploy"
+                                onClicked: instance.deploy(modelData.id)
+                        }
+                        Button {
+                                x: 450
                                 text: "Delete"
                                 onClicked: instance.remove(modelData.id)
                         }
