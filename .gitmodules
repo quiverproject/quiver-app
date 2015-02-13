@@ -1,6 +1,6 @@
 [submodule "Quiver"]
 	path = Quiver
 	url = git@github.com:quiverproject/quiver.git
-[submodule "quiver-app/qml/BSComponents"]
-	path = qml/BSComponents
-	url = git@github.com:bscmdesign/BSComponents.git
+	fetchRecurseSubmodules = true
+[submodule "qml/BSComponents"]
+	fetchRecurseSubmodules = true
