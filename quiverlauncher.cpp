@@ -165,17 +165,11 @@ QStringList QuiverLauncher::get_files_in_dir_recursive(const QString &dirpath) {
         return filepaths;
 }
 
-void QuiverLauncher::deploy(const QString &project_id) {
-        Project *project = get_project_from_project_id(project_id);
-        if (!project) {
-                qDebug() << this << "deploy(): fatal: project id" << project_id << "not found!";
-                return;
-        }
-
+void QuiverLauncher::update_qrc(Project *project) {
         QString qmldirpath = QString("%1/qml").arg(project->id());
         QDir qmldir(qmldirpath);
         if (!qmldir.exists()) {
-                qDebug() << this << "deploy(): fatal: qml dir in project id" << project->id() << "not found!";
+                qDebug() << this << "update_qrc(): fatal: qml dir in project id" << project->id() << "not found!";
                 return;
         }
 
@@ -185,9 +179,9 @@ void QuiverLauncher::deploy(const QString &project_id) {
                 relative_filepaths << "qml"+filepath.replace(qmldirpath, "");
         }
 
-        QFile qrc_file(QString("%1/Quiver.qrc").arg(project_id));
+        QFile qrc_file(QString("%1/Quiver.qrc").arg(project->id()));
         if (!qrc_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-                qDebug() << this << "deploy(): fatal: cannot open output qrc file" << qrc_file.fileName();
+                qDebug() << this << "update_qrc(): fatal: cannot open output qrc file" << qrc_file.fileName();
                 return;
         }
 
@@ -202,19 +196,104 @@ void QuiverLauncher::deploy(const QString &project_id) {
         qrc_file.close();
 }
 
-void QuiverLauncher::launch(const QString &project_id) {
-        QString qmake_path = QString("%1/Qt/5.4/clang_64/bin/qmake").arg(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)); //FIXME let the user configure it somehow (20141125)
-
-        //look up the project object based on the project_id
-        Project *project = get_project_from_project_id(project_id);
-        if (!project) {
-                qDebug() << this << "launch(): fatal: project id" << project_id << "not found!";
-                return;
-        }
+void QuiverLauncher::deploy_ios(Project *project) {
+        QDir builddir(builddirpath);
 
 
-        //build the project
-        builddirpath = QString("%1/../build-quiver-%2").arg(project->id()).arg(project->name());
+        setBusy(true);
+
+
+        QProcess archive_process;
+        archive_process.setWorkingDirectory(builddir.path());
+        archive_process.setProgram("xcodebuild");
+        archive_process.setArguments(QStringList()
+                                     << "-scheme"
+                                     << project->name()
+                                     << "clean"
+                                     << "archive"
+                                     << "-archivePath"
+                                     << QString("build/%1").arg(project->name())
+                                     );
+        archive_process.start();
+        archive_process.waitForStarted();
+        archive_process.waitForFinished();
+        
+
+        QProcess export_process;
+        export_process.setWorkingDirectory(builddir.path());
+        export_process.setProgram("xcodebuild");
+        export_process.setArguments(QStringList()
+                                    << "-exportArchive"
+                                    << "-exportFormat"
+                                    << "ipa"
+                                    << "-archivePath"
+                                    << QString("build/%1.xcarchive/").arg(project->name())
+                                    << "-exportPath"
+                                    << QString("build/%1.ipa").arg(project->name())
+                                    << "-exportProvisioningProfile"
+                                    << "iOSTeam Provisioning Profile: *"
+                                    );
+        export_process.start();
+        export_process.waitForStarted();
+        export_process.waitForFinished();
+
+
+        setBusy(false);
+}
+
+void QuiverLauncher::deploy_osx(Project *project) {
+        setBusy(true);
+
+        //FIXME translate dylibs5 and also sign the bundle
+
+        setBusy(false);
+}
+
+void QuiverLauncher::build_ios(Project *project) {
+        QString qmake_path = QString("%1/Qt/5.5/ios/bin/qmake").arg(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)); //FIXME let the user configure it somehow (20141125)
+
+        setBusy(true);
+
+
+        builddirpath = QString("%1/../build-quiver-ios-%2").arg(project->id()).arg(project->name());
+        QDir builddir(builddirpath);
+        if (!builddir.exists()) builddir.mkpath(builddir.path());
+
+        QProcess qmake_process;
+        qmake_process.setWorkingDirectory(builddir.path());
+        qmake_process.setProgram(qmake_path);
+        qmake_process.setArguments(QStringList()
+                                   << project->id()
+                                   << "-r"
+                                   << "-spec"
+                                   << "macx-ios-clang"
+                                   << "CONFIG+=release"
+                                   << "CONFIG+=iphoneos"
+                                   );
+        qmake_process.start();
+        qmake_process.waitForStarted();
+        qmake_process.waitForFinished();
+
+        QProcess make_process;
+        make_process.setWorkingDirectory(builddir.path());
+        make_process.setProgram("/usr/bin/make");
+        make_process.setArguments(QStringList() << "-f" << "Makefile.ReleaseDevice");
+        make_process.start();
+        make_process.waitForStarted();
+        //FIXME handle errors
+        make_process.waitForFinished();
+
+
+        setBusy(false);
+}
+
+void QuiverLauncher::build_osx(Project *project) {
+        QString qmake_path = QString("%1/Qt/5.5/clang_64/bin/qmake").arg(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)); //FIXME let the user configure it somehow (20141125)
+
+        setBusy(true);
+
+
+        builddirpath = QString("%1/../build-quiver-osx-%2").arg(project->id()).arg(project->name());
         QDir builddir(builddirpath);
         if (!builddir.exists()) builddir.mkpath(builddir.path());
 
@@ -229,11 +308,56 @@ void QuiverLauncher::launch(const QString &project_id) {
         QProcess make_process;
         make_process.setWorkingDirectory(builddir.path());
         make_process.setProgram("/usr/bin/make");
-        make_process.setArguments(QStringList()<<"-j"<<"4"); //FIXME
+        make_process.setArguments(QStringList()<<"-j"<<"8"); //FIXME
         make_process.start();
         make_process.waitForStarted();
         //FIXME handle errors
         make_process.waitForFinished();
+
+
+        setBusy(false);
+}
+
+void QuiverLauncher::deploy(const QString &project_id) {
+        Project *project = get_project_from_project_id(project_id);
+        if (!project) {
+                qDebug() << this << "deploy(): fatal: project id" << project_id << "not found!";
+                return;
+        }
+
+
+        update_qrc(project);
+
+
+        //build and deploy each checked platform
+        foreach (QObject *o, project->platforms()) {
+                auto platform = qobject_cast<Platform *>(o);
+                if (!platform) continue;
+                if (!platform->enabled()) continue;
+
+                if ("osx" == platform->name()) {
+                        build_osx(project);
+                        deploy_osx(project);
+                } else if ("ios" == platform->name()) {
+                        build_ios(project);
+                        deploy_ios(project);
+                } else {
+                        qDebug() << this << "build and deploy to platform" << platform->name() << "not supported at this time!";
+                }
+        }
+}
+
+void QuiverLauncher::launch(const QString &project_id) {
+        //look up the project object based on the project_id
+        Project *project = get_project_from_project_id(project_id);
+        if (!project) {
+                qDebug() << this << "launch(): fatal: project id" << project_id << "not found!";
+                return;
+        }
+
+
+        build_osx(project);
+
 
         //launch an instance of the project with each checked platform and config
         processes_to_launch.clear();
