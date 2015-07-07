@@ -3,4 +3,6 @@
 	url = git@github.com:quiverproject/quiver.git
 	fetchRecurseSubmodules = true
 [submodule "qml/BSComponents"]
+	url = git@github.com:bscm/BSComponents.git
+	path = qml/BSComponents
 	fetchRecurseSubmodules = true
