@@ -1,8 +1,12 @@
 #include "quiverlauncher.h"
 
+QuiverWorker::QuiverWorker(QObject *parent) : QObject(parent)
+{
+}
+
 QuiverLauncher::QuiverLauncher(QObject *parent) : QObject(parent)
 {
-        settings = new QSettings;
+        settings = new QSettings(this);
         //settings->clear();
         QVariantList variants = settings->value("projects").value<QVariantList>();
         foreach (const QVariant &variant, variants) {
@@ -18,6 +22,21 @@ QuiverLauncher::QuiverLauncher(QObject *parent) : QObject(parent)
                 }
                 settings->setValue("projects", projects);
         });
+
+        worker.moveToThread(&worker_thread);
+        worker_thread.start();
+
+        connect(this, SIGNAL(deploy_in_thread(const Project*)),
+                &worker, SLOT(deploy(const Project*)));
+        connect(this, SIGNAL(launch_in_thread(const Project*)),
+                &worker, SLOT(launch(const Project*)));
+        connect(&worker, &QuiverWorker::completed,
+                this, [this]() { setBusy(false); qDebug() << this << "finished!"; });
+}
+
+QuiverLauncher::~QuiverLauncher() {
+        worker_thread.quit();
+        worker_thread.wait();
 }
 
 void QuiverLauncher::fileDropped(const QList<QUrl> &urls) {
@@ -149,7 +168,7 @@ Project *QuiverLauncher::get_project_from_project_id(const QString &project_id) 
         return project;
 }
 
-QStringList QuiverLauncher::get_files_in_dir_recursive(const QString &dirpath) {
+QStringList QuiverWorker::get_files_in_dir_recursive(const QString &dirpath) {
         QStringList filepaths;
 
         QDirIterator it(dirpath, QDirIterator::Subdirectories);
@@ -165,7 +184,7 @@ QStringList QuiverLauncher::get_files_in_dir_recursive(const QString &dirpath) {
         return filepaths;
 }
 
-void QuiverLauncher::update_qrc(Project *project) {
+void QuiverWorker::update_qrc(const Project *project) {
         QString qmldirpath = QString("%1/qml").arg(project->id());
         QDir qmldir(qmldirpath);
         if (!qmldir.exists()) {
@@ -196,11 +215,14 @@ void QuiverLauncher::update_qrc(Project *project) {
         qrc_file.close();
 }
 
-void QuiverLauncher::deploy_ios(Project *project) {
+void QuiverWorker::start_wait_process(QProcess &process) {
+        process.start();
+        process.waitForStarted();
+        process.waitForFinished();
+}
+
+void QuiverWorker::deploy_ios(const Project *project) {
         QDir builddir(builddirpath);
-
-
-        setBusy(true);
 
 
         QProcess archive_process;
@@ -214,9 +236,7 @@ void QuiverLauncher::deploy_ios(Project *project) {
                                      << "-archivePath"
                                      << QString("build/%1").arg(project->name())
                                      );
-        archive_process.start();
-        archive_process.waitForStarted();
-        archive_process.waitForFinished();
+        start_wait_process(archive_process);
         
 
         QProcess export_process;
@@ -233,26 +253,132 @@ void QuiverLauncher::deploy_ios(Project *project) {
                                     << "-exportProvisioningProfile"
                                     << "iOSTeam Provisioning Profile: *"
                                     );
-        export_process.start();
-        export_process.waitForStarted();
-        export_process.waitForFinished();
+        start_wait_process(export_process);
 
 
-        setBusy(false);
+        show_in_finder(QString("%1/build/%2.ipa").arg(builddir.absolutePath()).arg(project->name()));
 }
 
-void QuiverLauncher::deploy_osx(Project *project) {
-        setBusy(true);
+void QuiverWorker::deploy_osx(const Project *project) {
+        QDir builddir(builddirpath);
 
-        //FIXME translate dylibs5 and also sign the bundle
 
-        setBusy(false);
+        QProcess process;
+        process.setWorkingDirectory(QString("%1/%2.app/Contents/MacOS").arg(builddir.path()).arg(project->name()));
+
+
+        //add Frameworks rpath to executable
+        process.setProgram("install_name_tool");
+        process.setArguments(QStringList()
+                             << "-add_rpath"
+                             << "@executable_path/../Frameworks"
+                             << project->name()
+                             );
+        start_wait_process(process);
+
+
+        //make Frameworks dir
+        process.setProgram("mkdir");
+        process.setArguments(QStringList() << "../Frameworks");
+        start_wait_process(process);
+
+        //copy qt frameworks into bundle
+        QStringList framework_names = QStringList()
+                        << "Core"
+                        << "DBus"
+                        << "Gui"
+                        << "Multimedia"
+                        << "MultimediaQuick_p"
+                        << "Network"
+                        << "OpenGL"
+                        << "PrintSupport"
+                        << "Qml"
+                        << "Quick"
+                        << "Sql"
+                        << "Svg"
+                        << "Widgets"
+                           ;
+        foreach (const QString &framework_name, framework_names) {
+                process.setProgram("rsync");
+                process.setArguments(QStringList()
+                                     << "-a"
+                                     << QString("%1/Qt/%2/clang_64/lib/Qt%3.framework")
+                                     .arg(QStandardPaths::writableLocation(QStandardPaths::HomeLocation))
+                                     .arg(qt_version)
+                                     .arg(framework_name)
+                                     << "../Frameworks/"
+                                     );
+                start_wait_process(process);
+        }
+
+        //copy qt plugins and qml stuff into bundle
+        QStringList dirs_to_copy = QStringList() << "plugins" << "qml";
+        foreach (const QString &dir_to_copy, dirs_to_copy) {
+                process.setProgram("rsync");
+                process.setArguments(QStringList()
+                                     << "-a"
+                                     << QString("%1/Qt/%2/clang_64/%3")
+                                     .arg(QStandardPaths::writableLocation(QStandardPaths::HomeLocation))
+                                     .arg(qt_version)
+                                     .arg(dir_to_copy)
+                                     << "../"
+                                     );
+                start_wait_process(process);
+        }
+
+        //get rid of space-consuming debug libs and headers dirs - deleting the .prl files is necessary for code signing
+        QStringList filemasks_to_delete = QStringList() << "*_debug.dylib" << "*_debug" << "Headers" << "*.prl";
+        foreach (const QString &filemask_to_delete, filemasks_to_delete) {
+                process.setProgram("find");
+                process.setArguments(QStringList()
+                                     << ".."
+                                     << "-name"
+                                     << filemask_to_delete
+                                     << "-exec"
+                                     << "rm"
+                                     << "-rf"
+                                     << "{}"
+                                     << ";"
+                                     );
+                start_wait_process(process);
+        }
+
+
+        //make qt.conf in Resources
+        process.setProgram("mkdir");
+        process.setArguments(QStringList() << "../Resources");
+        start_wait_process(process);
+
+        QFile qtconf_file(QString("%1/%2.app/Contents/Resources/qt.conf").arg(builddir.path()).arg(project->name()));
+        if (qtconf_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+                QTextStream stream(&qtconf_file);
+
+                stream << "[Paths]\n";
+                stream << "Plugins = plugins\n";
+
+                qtconf_file.close();
+        }
+
+
+        //sign the bundle
+        process.setProgram("codesign");
+        process.setArguments(QStringList()
+                             << "--force"
+                             << "--verify"
+                             << "--verbose"
+                             << "--deep"
+                             << "--sign"
+                             << "Developer ID Application: Grinbath LLC (KW6BRTLKNE)"
+                             << QString("../../../%1.app").arg(project->name())
+                             );
+        start_wait_process(process);
+
+
+        show_in_finder(QString("%1/%2.app").arg(builddir.absolutePath()).arg(project->name()));
 }
 
-void QuiverLauncher::build_ios(Project *project) {
-        QString qmake_path = QString("%1/Qt/5.5/ios/bin/qmake").arg(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)); //FIXME let the user configure it somehow (20141125)
-
-        setBusy(true);
+void QuiverWorker::build_ios(const Project *project) {
+        QString qmake_path = QString("%1/Qt/%2/ios/bin/qmake").arg(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)).arg(qt_version); //FIXME let the user configure it somehow (20141125)
 
 
         builddirpath = QString("%1/../build-quiver-ios-%2").arg(project->id()).arg(project->name());
@@ -282,15 +408,10 @@ void QuiverLauncher::build_ios(Project *project) {
         make_process.waitForStarted();
         //FIXME handle errors
         make_process.waitForFinished();
-
-
-        setBusy(false);
 }
 
-void QuiverLauncher::build_osx(Project *project) {
-        QString qmake_path = QString("%1/Qt/5.5/clang_64/bin/qmake").arg(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)); //FIXME let the user configure it somehow (20141125)
-
-        setBusy(true);
+void QuiverWorker::build_osx(const Project *project) {
+        QString qmake_path = QString("%1/Qt/%2/clang_64/bin/qmake").arg(QStandardPaths::writableLocation(QStandardPaths::HomeLocation)).arg(qt_version); //FIXME let the user configure it somehow (20141125)
 
 
         builddirpath = QString("%1/../build-quiver-osx-%2").arg(project->id()).arg(project->name());
@@ -313,19 +434,9 @@ void QuiverLauncher::build_osx(Project *project) {
         make_process.waitForStarted();
         //FIXME handle errors
         make_process.waitForFinished();
-
-
-        setBusy(false);
 }
 
-void QuiverLauncher::deploy(const QString &project_id) {
-        Project *project = get_project_from_project_id(project_id);
-        if (!project) {
-                qDebug() << this << "deploy(): fatal: project id" << project_id << "not found!";
-                return;
-        }
-
-
+void QuiverWorker::deploy(const Project *project) {
         update_qrc(project);
 
 
@@ -345,6 +456,19 @@ void QuiverLauncher::deploy(const QString &project_id) {
                         qDebug() << this << "build and deploy to platform" << platform->name() << "not supported at this time!";
                 }
         }
+
+        emit completed();
+}
+
+void QuiverLauncher::deploy(const QString &project_id) {
+        Project *project = get_project_from_project_id(project_id);
+        if (!project) {
+                qDebug() << this << "deploy(): fatal: project id" << project_id << "not found!";
+                return;
+        }
+
+        setBusy(true);
+        emit deploy_in_thread(project);
 }
 
 void QuiverLauncher::launch(const QString &project_id) {
@@ -355,7 +479,11 @@ void QuiverLauncher::launch(const QString &project_id) {
                 return;
         }
 
+        setBusy(true);
+        emit launch_in_thread(project);
+}
 
+void QuiverWorker::launch(const Project *project) {
         build_osx(project);
 
 
@@ -383,8 +511,9 @@ void QuiverLauncher::launch(const QString &project_id) {
         launch_next_process();
 }
 
-void QuiverLauncher::launch_next_process() {
+void QuiverWorker::launch_next_process() {
         if (!processes_to_launch.size()) {
+                emit completed();
                 return;
         }
 
@@ -452,7 +581,7 @@ void QuiverLauncher::launch_next_process() {
         process->waitForStarted();
 }
 
-void QuiverLauncher::read_process() {
+void QuiverWorker::read_process() {
         if (!process) return;
         process_out.append(process->readAllStandardOutput());
         if (process_out.contains("Quiver: main.qml loaded")) {
@@ -462,8 +591,35 @@ void QuiverLauncher::read_process() {
         }
 }
 
-void QuiverLauncher::process_finished() {
+void QuiverWorker::process_finished() {
         auto process = qobject_cast<QProcess *>(QObject::sender());
         if (!process) return;
         process->deleteLater();
+}
+
+void QuiverWorker::show_in_finder(QString path) { //from http://lynxline.com/show-in-finder-show-in-explorer/ (20130204)
+#ifdef Q_OS_MAC
+        QStringList args;
+        args << "-e";
+        args << "tell application \"Finder\"";
+        args << "-e";
+        args << "activate";
+        args << "-e";
+        args << "select POSIX file \""+path+"\"";
+        args << "-e";
+        args << "end tell";
+        QProcess::startDetached("osascript", args);
+#endif
+
+#ifdef Q_OS_WIN32
+        QStringList args;
+        args << "/select," << QDir::toNativeSeparators(path);
+        QProcess::startDetached("explorer", args);
+#endif
+
+#ifndef Q_OS_WIN32
+#ifndef Q_OS_MAC
+        Q_UNUSED(path) //don't know how to do this under linux right now (20130209)
+#endif
+#endif
 }
