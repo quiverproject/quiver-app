@@ -218,7 +218,7 @@ void QuiverWorker::update_qrc(const Project *project) {
 void QuiverWorker::start_wait_process(QProcess &process) {
         process.start();
         process.waitForStarted();
-        process.waitForFinished();
+        process.waitForFinished(-1);
 }
 
 void QuiverWorker::deploy_ios(const Project *project) {
@@ -398,7 +398,7 @@ void QuiverWorker::build_ios(const Project *project) {
                                    );
         qmake_process.start();
         qmake_process.waitForStarted();
-        qmake_process.waitForFinished();
+        qmake_process.waitForFinished(-1);
 
         QProcess make_process;
         make_process.setWorkingDirectory(builddir.path());
@@ -407,7 +407,7 @@ void QuiverWorker::build_ios(const Project *project) {
         make_process.start();
         make_process.waitForStarted();
         //FIXME handle errors
-        make_process.waitForFinished();
+        make_process.waitForFinished(-1);
 }
 
 void QuiverWorker::build_osx(const Project *project) {
@@ -424,7 +424,7 @@ void QuiverWorker::build_osx(const Project *project) {
         qmake_process.setArguments(QStringList()<<project->id());
         qmake_process.start();
         qmake_process.waitForStarted();
-        qmake_process.waitForFinished();
+        qmake_process.waitForFinished(-1);
 
         QProcess make_process;
         make_process.setWorkingDirectory(builddir.path());
@@ -433,7 +433,7 @@ void QuiverWorker::build_osx(const Project *project) {
         make_process.start();
         make_process.waitForStarted();
         //FIXME handle errors
-        make_process.waitForFinished();
+        make_process.waitForFinished(-1);
 }
 
 void QuiverWorker::deploy(const Project *project) {
