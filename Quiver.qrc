@@ -1,17 +1,17 @@
-<RCC><qresource prefix="/">
-<file>qml/BSComponents/+mac/BSToolBar.qml</file>
-<file>qml/BSComponents/+mac/BSToolButton.qml</file>
-<file>qml/BSComponents/BSToolBar.qml</file>
-<file>qml/BSComponents/BSToolButton.qml</file>
-<file>qml/BSComponents/mactoolbar.h</file>
-<file>qml/BSComponents/mactoolbar.mm</file>
-<file>qml/BSComponents/mactoolbutton.cpp</file>
-<file>qml/BSComponents/mactoolbutton.h</file>
-<file>qml/BSComponents/qmldir</file>
-<file>qml/common/DragAndDropArea.qml</file>
-<file>qml/common/qmldir</file>
-<file>qml/osx/MainMenu.qml</file>
-<file>qml/osx/MainToolBar.qml</file>
-<file>qml/osx/MainUI.qml</file>
-<file>qml/osx/main.qml</file>
-</qresource></RCC>
+<RCC>
+    <qresource prefix="/">
+        <file>qml/BSComponents/BSToolBar.qml</file>
+        <file>qml/BSComponents/BSToolButton.qml</file>
+        <file>qml/BSComponents/mactoolbar.h</file>
+        <file>qml/BSComponents/mactoolbar.mm</file>
+        <file>qml/BSComponents/mactoolbutton.cpp</file>
+        <file>qml/BSComponents/mactoolbutton.h</file>
+        <file>qml/BSComponents/qmldir</file>
+        <file>qml/common/DragAndDropArea.qml</file>
+        <file>qml/common/qmldir</file>
+        <file>qml/osx/MainMenu.qml</file>
+        <file>qml/osx/MainToolBar.qml</file>
+        <file>qml/osx/MainUI.qml</file>
+        <file>qml/osx/main.qml</file>
+    </qresource>
+</RCC>
