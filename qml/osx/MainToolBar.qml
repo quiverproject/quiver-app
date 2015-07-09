@@ -25,14 +25,14 @@ BSToolBar {
                 BSToolButton { id: button_one
                         text: "Add New Qt Project"
                         tooltip: "Add New Qt Project"
-                        iconSource: "../../assets/goat-hey.png"
+                        iconSource: "../../../quiver-app/assets/goat-hey.png"
                         action: addProjectAction
                 }
 
                 BSToolButton { id: button_two
                         text: "Second Button"
                         tooltip: "Bleh2"
-                        iconSource: "../../assets/goat-hey.png"
+                        iconSource: "../../../quiver-app/assets/goat-hey.png"
                 }
         }
 }
