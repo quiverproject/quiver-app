@@ -30,6 +30,9 @@ DragAndDropArea { id: root
                 Connections {
                         target: instance
                         onProjectsChanged: console.log("Projects list changed!")
+
+                        //GREG: change this to use whatever console QML item you devise
+                        onProcessOutput: console.log(text)
                 }
                 delegate: projectListItemDelegate
                 //anchors.top: toolBar.bottom

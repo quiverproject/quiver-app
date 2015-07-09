@@ -32,6 +32,8 @@ QuiverLauncher::QuiverLauncher(QObject *parent) : QObject(parent)
                 &worker, SLOT(launch(const Project*)));
         connect(&worker, &QuiverWorker::completed,
                 this, [this]() { setBusy(false); qDebug() << this << "finished!"; });
+        connect(&worker, SIGNAL(process_output(QString)),
+                this, SIGNAL(processOutput(QString)));
 }
 
 QuiverLauncher::~QuiverLauncher() {
@@ -569,11 +571,46 @@ void QuiverWorker::launch_next_process() {
 
         QString executable_dirpath = QString("%1/%2.app/Contents/MacOS").arg(builddirpath).arg(project_name);
         QString program = QString("%1/%2").arg(executable_dirpath).arg(project_name);
-        QStringList environment; environment << QString("%1=%2").arg("Quiver_platformName").arg(platform_name);
+        QStringList environment;
+        environment << QString("%1=%2").arg("Quiver_platformName").arg(platform_name);
+        environment << QString("%1=%2").arg("Quiver_deploy").arg("0");
 
         process = new QProcess;
-        connect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(read_process()));
+
+        connect(process, &QProcess::readyReadStandardOutput, [=]() {
+                if (!process) return;
+
+                QString text = process->readAllStandardError();
+
+                emit process_output(QString("%1 %2 (%3) stdout: %4")
+                                    .arg(project_name)
+                                    .arg(platform_name)
+                                    .arg(config_id)
+                                    .arg(text)
+                                    );
+        });
+
+        connect(process, &QProcess::readyReadStandardError, [=]() {
+                if (!process) return;
+
+                QString text = process->readAllStandardError();
+
+                process_out.append(text);
+                if (process_out.contains("Quiver: main.qml loaded")) {
+                        process_out.clear();
+                        launch_next_process();
+                }
+
+                emit process_output(QString("%1 %2 (%3) stderr: %4")
+                                    .arg(project_name)
+                                    .arg(platform_name)
+                                    .arg(config_id)
+                                    .arg(text)
+                                    );
+        });
+
         connect(process, SIGNAL(finished(int)), this, SLOT(process_finished()));
+
         process->setWorkingDirectory(executable_dirpath);
         process->setProgram(program);
         process->setEnvironment(environment);
@@ -581,20 +618,11 @@ void QuiverWorker::launch_next_process() {
         process->waitForStarted();
 }
 
-void QuiverWorker::read_process() {
-        if (!process) return;
-        process_out.append(process->readAllStandardOutput());
-        if (process_out.contains("Quiver: main.qml loaded")) {
-                disconnect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(read_process()));
-                process_out.clear();
-                launch_next_process();
-        }
-}
-
 void QuiverWorker::process_finished() {
         auto process = qobject_cast<QProcess *>(QObject::sender());
         if (!process) return;
         process->deleteLater();
+        process = nullptr;
 }
 
 void QuiverWorker::show_in_finder(QString path) { //from http://lynxline.com/show-in-finder-show-in-explorer/ (20130204)

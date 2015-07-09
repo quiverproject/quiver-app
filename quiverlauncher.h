@@ -21,8 +21,8 @@ public slots:
         void launch(const Project *project);
 signals:
         void completed();
+        void process_output(QString text);
 private slots:
-        void read_process();
         void process_finished();
 private:
         void build_ios(const Project *project);
@@ -56,6 +56,7 @@ public:
 signals:
         void projectsChanged();
         void busyChanged();
+        void processOutput(QString text);
 
         void deploy_in_thread(const Project *project);
         void launch_in_thread(const Project *project);
