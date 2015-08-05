@@ -3,8 +3,12 @@ import QtQuick.Controls 1.2
 import QtQuick.Layouts 1.1
 import QtQuick.Dialogs 1.0
 
-ToolBar {
+import BSComponents 1.0
+
+BSToolBar {
         id: toolBar
+        window: main
+        titleHidden: true
 
         FileDialog {
                 id: fileDialog
@@ -18,14 +22,14 @@ ToolBar {
         }
 
         RowLayout {
-                ToolButton { id: button_one
+                BSToolButton { id: button_one
                         text: "Add New Qt Project"
                         tooltip: "Add New Qt Project"
                         iconSource: "../../../quiver-app/assets/goat-hey.png"
                         action: addProjectAction
                 }
 
-                ToolButton { id: button_two
+                BSToolButton { id: button_two
                         text: "Second Button"
                         tooltip: "Bleh2"
                         iconSource: "../../../quiver-app/assets/goat-hey.png"
