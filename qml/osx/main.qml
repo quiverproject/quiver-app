@@ -43,7 +43,7 @@ ApplicationWindow { id: main
                 source: toolBarFileName
         }
 
-        WindowBackgroundBlur {
+        MacWindowBlur {
             id: blur
             window: root
             radius: 25
