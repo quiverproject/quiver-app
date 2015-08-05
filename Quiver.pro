@@ -32,7 +32,8 @@ INCLUDEPATH += common
 
 HEADERS += \
     quiverlauncher.h \
-    project.h
+    project.h \
+    qml/BSComponents/macwindowblur.h
 
 macx {
 HEADERS += macurlconvert.h
@@ -52,3 +53,6 @@ LIBS += -framework Foundation
 
 RESOURCES += \
     Quiver.qrc
+
+OBJECTIVE_SOURCES += \
+    qml/BSComponents/macwindowblur.mm

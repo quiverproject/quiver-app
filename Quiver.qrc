@@ -13,5 +13,7 @@
         <file>qml/osx/MainToolBar.qml</file>
         <file>qml/osx/MainUI.qml</file>
         <file>qml/osx/main.qml</file>
+        <file>qml/BSComponents/macwindowblur.h</file>
+        <file>qml/BSComponents/macwindowblur.mm</file>
     </qresource>
 </RCC>
