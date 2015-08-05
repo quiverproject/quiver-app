@@ -25,6 +25,12 @@ DragAndDropArea { id: root
 //                }
 //        }
 
+        Rectangle { id: tools
+            width: parent.width
+            height: 24
+            color: "red"
+        }
+
         ListView { id: projectList
                 model: instance.projects
                 Connections {
