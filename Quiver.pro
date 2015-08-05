@@ -48,7 +48,7 @@ HEADERS += qml/BSComponents/mactoolbutton.h \
     qml/BSComponents/mactoolbar.h
 SOURCES += qml/BSComponents/mactoolbutton.cpp
 OBJECTIVE_SOURCES += qml/BSComponents/mactoolbar.mm
-LIBS += -framework Foundation -framework CoreGraphics -framework AppKit
+LIBS += -framework Foundation -framework CoreGraphics -framework AppKit -framework ApplicationServices
 }
 
 RESOURCES += \
