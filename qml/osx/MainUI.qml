@@ -4,6 +4,7 @@ import QtQuick.Controls.Styles 1.2
 import QtQuick.Layouts 1.1
 
 import common 1.0
+import com.bscmdesign.qmlcomponents 1.0
 
 DragAndDropArea { id: root
         anchors.fill: parent
@@ -12,6 +13,7 @@ DragAndDropArea { id: root
                 main.width = 1024;
                 main.height = 768;
                 main.title = "Quiver";
+                main.color = "transparent";
         }
 
 //        Rectangle{ id: toolBar
@@ -24,6 +26,13 @@ DragAndDropArea { id: root
 //                        text: "Add New Qt Project"
 //                }
 //        }
+
+        MacWindowBlur {
+            id: blur
+            window: main
+            radius: 25
+            backgroundColor: "#a0f7fafc"
+        }
 
         Rectangle { id: tools
             width: parent.width
