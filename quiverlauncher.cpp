@@ -243,7 +243,10 @@ void QuiverWorker::deploy_ios(const Project *project) {
 
         //start by blowing away whatever is already there - xcodebuild will not overwrite it (20150806)
         QString archive_path = QString("build/%1.ipa").arg(project->name());
-        QFile(archive_path).remove();
+        QString archive_full_path = QString("%1/%2").arg(builddir.path()).arg(archive_path);
+        if (!QFile(archive_full_path).remove()) {
+                qDebug() << this << "removing the ipa failed!" << archive_full_path;
+        }
 
         QProcess export_process;
         export_process.setWorkingDirectory(builddir.path());
