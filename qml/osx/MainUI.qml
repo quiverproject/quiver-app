@@ -8,10 +8,10 @@ import com.bscmdesign.qmlcomponents 1.0
 
 DragAndDropArea { id: root
         anchors.fill: parent
-
+        property alias backgroundColor: blur.backgroundColor
         Component.onCompleted: {
-                main.width = 1024;
-                main.height = 768;
+                main.width = 820;
+                main.height = 415;
                 main.title = "Quiver";
                 main.color = "transparent";
         }
@@ -30,7 +30,7 @@ DragAndDropArea { id: root
         MacWindowBlur {
             id: blur
             window: main
-            radius: 25
+            radius: 10
             backgroundColor: "#a0f7fafc"
         }
 
@@ -65,6 +65,9 @@ DragAndDropArea { id: root
                 Rectangle { id: projectItem
                         width: parent.width
                         height: 300
+
+                        color: "transparent"
+
                         MouseArea { id: projectMouse
                                 anchors.fill: parent
                                 hoverEnabled: true
