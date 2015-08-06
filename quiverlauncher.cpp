@@ -241,6 +241,10 @@ void QuiverWorker::deploy_ios(const Project *project) {
         start_wait_process(archive_process);
         
 
+        //start by blowing away whatever is already there - xcodebuild will not overwrite it (20150806)
+        QString archive_path = QString("build/%1.ipa").arg(project->name());
+        QFile(archive_path).remove();
+
         QProcess export_process;
         export_process.setWorkingDirectory(builddir.path());
         export_process.setProgram("xcodebuild");
@@ -251,7 +255,7 @@ void QuiverWorker::deploy_ios(const Project *project) {
                                     << "-archivePath"
                                     << QString("build/%1.xcarchive/").arg(project->name())
                                     << "-exportPath"
-                                    << QString("build/%1.ipa").arg(project->name())
+                                    << archive_path
                                     << "-exportProvisioningProfile"
                                     << "iOSTeam Provisioning Profile: *"
                                     );
