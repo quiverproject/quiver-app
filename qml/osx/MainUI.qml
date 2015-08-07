@@ -59,6 +59,13 @@ DragAndDropArea { id: root
                 // add: Transition { }
                 // removeDisplaced: Transition { }
                 // remove: Transition { }
+                highlight:
+                    Rectangle {
+                        color: "red"
+                    }
+                highlightFollowsCurrentItem: true
+                focus: true
+
         }
 
         Component { id: projectListItemDelegate
@@ -67,13 +74,14 @@ DragAndDropArea { id: root
                         height: 300
 
                         color: "transparent"
+//                        color: ListView.isCurrentItem ? "black" : "red"
 
                         MouseArea { id: projectMouse
                                 anchors.fill: parent
                                 hoverEnabled: true
-                                onClicked: {
-                                        parent.color = "#116CD6"
-                                } // FIXME: Implement behavior and connect data for selected Quiver projects
+//                                onClicked: {
+//                                        parent.color = "#116CD6"
+//                                } // FIXME: Implement behavior and connect data for selected Quiver projects
                         }
                         Text { id: projectName
                                 anchors.top: parent.top
