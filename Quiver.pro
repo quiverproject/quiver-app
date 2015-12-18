@@ -41,6 +41,8 @@ OBJECTIVE_SOURCES += macurlconvert.mm
 LIBS += -framework Foundation
 }
 
+QMAKE_MAC_SDK = macosx10.11 #added 20151218 to make build work under 10.10
+
 #for BSComponents
 macx {
 
