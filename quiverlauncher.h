@@ -33,7 +33,7 @@ private:
         void update_qrc(const Project *project);
         QStringList get_files_in_dir_recursive(const QString &dirpath);
         QString builddirpath;
-        QString qt_version = "5.5";
+        QString qt_version = "5.6";
 
         void launch_next_process();
         QProcess *process = nullptr;
