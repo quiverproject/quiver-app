@@ -221,7 +221,17 @@ void QuiverWorker::start_wait_process(QProcess &process) {
         process.start();
         process.waitForStarted();
         process.waitForFinished(-1);
-        qDebug() << process.readAllStandardOutput() << process.readAllStandardError();
+        qDebug() << QString("%1 %2").arg(process.program()).arg(process.arguments().join(" "));
+
+        qDebug() << "stdout:";
+        foreach (auto line, QString(process.readAllStandardOutput()).split("\n")) {
+                qDebug() << line;
+        }
+
+        qDebug() << "stderr:";
+        foreach (auto line, QString(process.readAllStandardError()).split("\n")) {
+                qDebug() << line;
+        }
 }
 
 void QuiverWorker::deploy_ios(const Project *project) {
@@ -406,18 +416,13 @@ void QuiverWorker::build_ios(const Project *project) {
                                    << "CONFIG+=release"
                                    << "CONFIG+=iphoneos"
                                    );
-        qmake_process.start();
-        qmake_process.waitForStarted();
-        qmake_process.waitForFinished(-1);
+        start_wait_process(qmake_process);
 
         QProcess make_process;
         make_process.setWorkingDirectory(builddir.path());
         make_process.setProgram("/usr/bin/make");
-        make_process.setArguments(QStringList() << "-f" << "Makefile.ReleaseDevice");
-        make_process.start();
-        make_process.waitForStarted();
-        //FIXME handle errors
-        make_process.waitForFinished(-1);
+        //make_process.setArguments(QStringList() << "-f" << "Makefile.ReleaseDevice");
+        start_wait_process(make_process);
 }
 
 void QuiverWorker::build_osx(const Project *project) {
