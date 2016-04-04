@@ -221,6 +221,7 @@ void QuiverWorker::start_wait_process(QProcess &process) {
         process.start();
         process.waitForStarted();
         process.waitForFinished(-1);
+        qDebug() << process.readAllStandardOutput() << process.readAllStandardError();
 }
 
 void QuiverWorker::deploy_ios(const Project *project) {
@@ -260,7 +261,7 @@ void QuiverWorker::deploy_ios(const Project *project) {
                                     << "-exportPath"
                                     << archive_path
                                     << "-exportProvisioningProfile"
-                                    << "iOSTeam Provisioning Profile: *"
+                                    << "iOS Team Provisioning Profile: *"
                                     );
         start_wait_process(export_process);
 
