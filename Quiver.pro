@@ -58,3 +58,6 @@ RESOURCES += \
 
 OBJECTIVE_SOURCES += \
     qml/BSComponents/macwindowblur.mm
+
+DISTFILES += \
+    qml/osx/CustomBorder.qml
