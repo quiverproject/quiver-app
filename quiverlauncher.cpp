@@ -244,6 +244,8 @@ void QuiverWorker::deploy_ios(const Project *project) {
         archive_process.setArguments(QStringList()
                                      << "-scheme"
                                      << project->name()
+                                     << "-configuration"
+                                     << "AdHoc"
                                      << "clean"
                                      << "archive"
                                      << "-archivePath"
@@ -259,21 +261,39 @@ void QuiverWorker::deploy_ios(const Project *project) {
                 qDebug() << this << "removing the ipa failed!" << archive_full_path;
         }
 
+
+        //copy the contents of :/options.plist (the xcodebuild exportOptionsPlist file) to a temporary file that xcodebuild will read
+        QString options_plist_path = "/tmp/quiver-options.plist";
+        QFile options_file(options_plist_path);
+        options_file.open(QIODevice::WriteOnly | QIODevice::Truncate);
+        QTextStream options_stream(&options_file);
+
+        QFile options_in_file(":/options.plist");
+        options_in_file.open(QIODevice::ReadOnly);
+        QTextStream options_in_stream(&options_in_file);
+
+        options_stream << options_in_stream.readAll();
+
+        options_in_file.close();
+        options_file.close();
+
+
         QProcess export_process;
         export_process.setWorkingDirectory(builddir.path());
         export_process.setProgram("xcodebuild");
         export_process.setArguments(QStringList()
+                                    << "-configuration"
+                                    << "AdHoc"
                                     << "-exportArchive"
-                                    << "-exportFormat"
-                                    << "ipa"
                                     << "-archivePath"
                                     << QString("build/%1.xcarchive/").arg(project->name())
                                     << "-exportPath"
-                                    << archive_path
-                                    << "-exportProvisioningProfile"
-                                    << "iOS Team Provisioning Profile: *"
+                                    << "build/"
+                                    << "-exportOptionsPlist"
+                                    << options_plist_path
                                     );
         start_wait_process(export_process);
+        QFile(options_plist_path).remove();
 
 
         show_in_finder(QString("%1/build/%2.ipa").arg(builddir.absolutePath()).arg(project->name()));

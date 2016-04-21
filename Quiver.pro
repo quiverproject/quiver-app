@@ -54,6 +54,7 @@ LIBS += -framework Foundation -framework AppKit
 }
 
 RESOURCES += \
+    resources.qrc \
     Quiver.qrc
 
 OBJECTIVE_SOURCES += \
