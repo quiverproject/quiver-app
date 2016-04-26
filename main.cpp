@@ -7,6 +7,11 @@
 
 #include "quiverlauncher.h"
 
+//
+// FIXME: Command+W hides application window. Clicking app dock icon opens window
+// SEE: https://github.com/KDAB/Charm/blob/c6244ad730057ec8f89ca4b4555df3c386756209/Charm/MacApplicationCore.mm
+// SEE: https://github.com/petroules/petroules-utilities-qt/blob/d05e0c6312b47a2d870d9e6d515ab1142dda9630/src/integratedapplication_mac.mm
+
 int main(int argc, char *argv[]) {
         QApplication app(argc, argv);
 
