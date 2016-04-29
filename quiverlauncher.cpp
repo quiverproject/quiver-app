@@ -72,21 +72,14 @@ void QuiverLauncher::addProjectWithDirpath(QString dirpath) {
                 info.setFile(info.path());
         }
 
-        //directory must contain a directory called quiver and exactly one .pro file
+        //directory must contain exactly one .pro file
         QDir directory(dirpath);
-        bool found_quiver = false;
-        bool found_qml_dir = false;
         int found_pro_files = 0;
         foreach (const QString &filename, directory.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot)) {
-                if (filename.toLower() == "quiver" and QFileInfo(filename).isDir()) {
-                        found_quiver = true;
-                } else if (filename.toLower() == "qml" and QFileInfo(filename).isDir()) {
-                        found_qml_dir = true;
-                } else if (filename.toLower().endsWith(".pro") && !QFileInfo(filename).isDir()) {
+                if (filename.toLower().endsWith(".pro") && !QFileInfo(filename).isDir()) {
                         ++found_pro_files;
                 }
         }
-        if (!found_quiver) return;
         if (found_pro_files != 1) return;
 
         QString id = directory.path();
@@ -190,7 +183,7 @@ void QuiverWorker::update_qrc(const Project *project) {
         QString qmldirpath = QString("%1/qml").arg(project->id());
         QDir qmldir(qmldirpath);
         if (!qmldir.exists()) {
-                qDebug() << this << "update_qrc(): fatal: qml dir in project id" << project->id() << "not found!";
+                qDebug() << this << "update_qrc(): qml dir in project id" << project->id() << "not found!";
                 return;
         }
 
@@ -202,7 +195,7 @@ void QuiverWorker::update_qrc(const Project *project) {
 
         QFile qrc_file(QString("%1/Quiver.qrc").arg(project->id()));
         if (!qrc_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-                qDebug() << this << "update_qrc(): fatal: cannot open output qrc file" << qrc_file.fileName();
+                qDebug() << this << "update_qrc(): cannot open output qrc file" << qrc_file.fileName();
                 return;
         }
 
@@ -490,6 +483,12 @@ void QuiverWorker::deploy(const Project *project) {
                 } else {
                         qDebug() << this << "build and deploy to platform" << platform->name() << "not supported at this time!";
                 }
+        }
+
+        //if there are no checked platforms (because this is not a quiver project), just deploy for os x
+        if (!project->platforms().size()) {
+                build_osx(project);
+                deploy_osx(project);
         }
 
         emit completed();
