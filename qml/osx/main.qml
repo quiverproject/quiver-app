@@ -1,9 +1,13 @@
-import QtQuick 2.3
+import QtQuick 2.5
+import QtQuick.Window 2.0
 import QtQuick.Controls 1.2
 import QtQuick.Controls.Styles 1.4
 
 ApplicationWindow { id: main
+
+    color: "transparent"
         Item { id: env
+//            color: "transparent"
 
         }
         property string sourceFileName: "MainUI.qml"
@@ -33,7 +37,14 @@ ApplicationWindow { id: main
                 source: menuFileName
         }
 
-        Loader { id: toolBarLoader
-                source: toolBarFileName
+//        Loader { id: toolBarLoader
+//                source: toolBarFileName
+//        }
+
+        Shortcut {
+            sequence: StandardKey.Close
+            context: Qt.ApplicationShortcut
+//            onActivated: main.visible = !main.visible
+            onActivated: main.hide()
         }
 }
