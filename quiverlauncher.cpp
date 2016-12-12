@@ -429,7 +429,7 @@ void QuiverWorker::build_ios(const Project *project) {
                                    << "CONFIG+=release"
                                    << "CONFIG+=iphoneos"
                                    );
-        start_wait_process(qmake_process);
+        //start_wait_process(qmake_process);
 
         QProcess make_process;
         make_process.setWorkingDirectory(builddir.path());
