@@ -3,6 +3,9 @@
 
 #include "qml/BSComponents/mactoolbar.h"
 
+//#include "qml/com.afmx.debug/afmxdebug_plugin.h"
+//#include "qml/com.afmx.debug/peekaboolib.h"
+
 #include "Quiver.h"
 
 #include "quiverlauncher.h"
