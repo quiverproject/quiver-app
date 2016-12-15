@@ -7,6 +7,8 @@ import QtQuick.Window 2.1
 
 import common 1.0
 import com.bscmdesign.qmlcomponents 1.0
+//import AMFXDebugScreenConsole 1.0
+//import AFMXDebug 1.0
 
 DragAndDropArea { id: root
     property alias backgroundColor: blur.backgroundColor
@@ -23,13 +25,11 @@ DragAndDropArea { id: root
         onTriggered: fileDialog.open()
         shortcut: StandardKey.Open
     }
-    FileDialog {
-        id: fileDialog
+    FileDialog { id: fileDialog
         nameFilters: [ "pro files (*.pro)" ]
         onAccepted: instance.addProjectWithUrl(fileUrl)
     }
-    MacWindowBlur {
-        id: blur
+    MacWindowBlur { id: blur
         window: main
         radius: 10
         backgroundColor: "#a0f7fafc"
@@ -70,32 +70,8 @@ DragAndDropArea { id: root
 
                 }
             }
-            Button {
-                text: "Add New Qt Project"
-                //            onClicked: instance.addProjectWithUrl(fileUrl)
-                action: addProjectAction
-                height: parent.height
-                style: ButtonStyle {
-                    background: Rectangle {
-                        width: 480
-                    }
 
-                }
-            }
-            Button {
-                text: "Add New Qt Project"
-                //            onClicked: instance.addProjectWithUrl(fileUrl)
-                action: addProjectAction
-                height: parent.height
-                style: ButtonStyle {
-                    background: Rectangle {
-                        width: 480
-                    }
-
-                }
-            }
-            Button {
-                id: showButton
+            Button { id: showButton
 //                width: col.cellWidth
                 text: testWindow.visible ? "Hide Output" : "Show Output"
                 onClicked: testWindow.visible = !testWindow.visible
@@ -421,5 +397,6 @@ DragAndDropArea { id: root
         }
     }
 
+//    AMFXDebugScreenConsole {}
 
 }
