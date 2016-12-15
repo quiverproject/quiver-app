@@ -36,8 +36,6 @@ HEADERS += \
     quiverlauncher.h \
     project.h \
     qml/BSComponents/macwindowblur.h \
-    qml/afmxdebug_plugin.h \
-    qml/peekaboolib.h \
     qml/AFMXDebug/afmxdebug_plugin.h \
     qml/AFMXDebug/peekaboolib.h
 
