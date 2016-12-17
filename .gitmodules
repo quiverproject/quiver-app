@@ -6,7 +6,3 @@
 	url = git@github.com:bscm/BSComponents.git
 	path = qml/BSComponents
 	fetchRecurseSubmodules = true
-[submodule "qml/AFMXDebug"]
-	url = git@github.com:julianguarinautoformax/qml-debug-tool.git
-	path = qml/AFMXDebug
-	fetchRecurseSubmodules = true
