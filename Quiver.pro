@@ -12,9 +12,7 @@ include(Quiver/Quiver.pri)
 
 SOURCES += main.cpp \
     quiverlauncher.cpp \
-    project.cpp \
-    qml/AFMXDebug/afmxdebug_plugin.cpp \
-    qml/AFMXDebug/peekaboolib.cpp
+    project.cpp
 
 OTHER_FILES += \
     qml/osx/main.qml \
@@ -35,9 +33,7 @@ INCLUDEPATH += common
 HEADERS += \
     quiverlauncher.h \
     project.h \
-    qml/BSComponents/macwindowblur.h \
-    qml/AFMXDebug/afmxdebug_plugin.h \
-    qml/AFMXDebug/peekaboolib.h
+    qml/BSComponents/macwindowblur.h
 
 macx {
 HEADERS += macurlconvert.h
@@ -66,3 +62,7 @@ OBJECTIVE_SOURCES += \
 
 DISTFILES += \
     qml/osx/CustomBorder.qml
+
+#ICON = resources/icon64.png
+#macx: ICON = resources/icon.icns
+#win32: RC_FILE = resources/window.rc
