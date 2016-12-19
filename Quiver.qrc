@@ -15,13 +15,5 @@
         <file>qml/osx/main.qml</file>
         <file>qml/BSComponents/macwindowblur.h</file>
         <file>qml/BSComponents/macwindowblur.mm</file>
-        <file>qml/AFMXDebug/afmxdebug_plugin.cpp</file>
-        <file>qml/AFMXDebug/afmxdebug_plugin.h</file>
-        <file>qml/AFMXDebug/AMFXDebugScreenConsole.qml</file>
-        <file>qml/AFMXDebug/peek-a-boo-lib.pro</file>
-        <file>qml/AFMXDebug/peekaboolib.cpp</file>
-        <file>qml/AFMXDebug/peekaboolib.h</file>
-        <file>qml/AFMXDebug/qml.qrc</file>
-        <file>qml/AFMXDebug/qmldir</file>
     </qresource>
 </RCC>
