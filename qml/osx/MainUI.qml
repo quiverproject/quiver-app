@@ -349,7 +349,7 @@ DragAndDropArea { id: root
 
                 focus: true
 
-                text: "Quiver Output Output Output Output Output Output Output Output Output Output Output Output Output Output Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n "
+//                text: "Quiver Output Output Output Output Output Output Output Output Output Output Output Output Output Output Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n "
 
                 //
                 // FIXME: Use regex to highlight all terminal text
