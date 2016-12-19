@@ -7,11 +7,9 @@ import QtQuick.Window 2.1
 
 import common 1.0
 import com.bscmdesign.qmlcomponents 1.0
-//import AMFXDebugScreenConsole 1.0
-//import AFMXDebug 1.0
 
 DragAndDropArea { id: root
-    property alias backgroundColor: blur.backgroundColor
+//    property alias backgroundColor: blur.backgroundColor
 
     anchors.fill: parent
 
@@ -32,10 +30,12 @@ DragAndDropArea { id: root
     MacWindowBlur { id: blur
         window: main
         radius: 10
-        backgroundColor: "#a0f7fafc"
+        backgroundColor: "#a0f7fa"
     }
 
-    Rectangle { id: toolBar
+//    MainToolBar{}
+
+        Rectangle { id: toolBar
         width: parent.width
         height: 44
 
@@ -67,14 +67,29 @@ DragAndDropArea { id: root
                     background: Rectangle {
                         //                        width: 480
                     }
-
                 }
             }
 
             Button { id: showButton
-//                width: col.cellWidth
-                text: testWindow.visible ? "Hide Output" : "Show Output"
-                onClicked: testWindow.visible = !testWindow.visible
+                text: terminalWindow.visible ? "Hide Terminal" : "Show Terminal"
+                height: parent.height
+                style: ButtonStyle {
+                    background: Rectangle {
+                        //                        width: 480
+                    }
+                }
+                onClicked: terminalWindow.visible = !terminalWindow.visible
+            }
+
+            Button { id: testFlags
+                text: "toggle flags"
+                height: parent.height
+                style: ButtonStyle {
+                    background: Rectangle {
+                        //                        width: 480
+                    }
+                }
+                onClicked: main.flags ^= Qt.FramelessWindowHint|Qt.NoDropShadowWindowHint
             }
         }
 
@@ -98,7 +113,7 @@ DragAndDropArea { id: root
             onProjectsChanged: console.log("Projects list changed!")
 
             //GREG: change this to use whatever console QML item you devise
-//            onProcessOutput: console.log(quiverTerminal.text += text)
+            onProcessOutput: console.log(quiverTerminal.text += text + "\n")
         }
 
 
@@ -124,6 +139,7 @@ DragAndDropArea { id: root
         //            to: "toState"
 
         //        }
+
         highlight:
             Rectangle {
             color: "#F5F5F5"
@@ -284,25 +300,132 @@ DragAndDropArea { id: root
     }
 
 
-    property var testWindow: Window {
+
+
+    property var terminalWindow: Window {
         width: 650
         height: 437
-        color: "#215400"
-        title: "Quiver Output"
+        //        color: "#215400"
+        title: "Quiver Terminal"
         flags: Qt.Window | Qt.WindowFullscreenButtonHint
+
+
+
+//        Flickable {
+////            width: parent.width
+////            height: parent.height
+//            contentWidth: contentItem.childrenRect.width
+//            contentHeight: contentItem.childrenRect.height
+//            anchors.fill: parent
+
+
+
+//        FocusScope { id: rootScope // from http://stackoverflow.com/questions/26170972/textedit-line-background-color (GG 20161216)
+//            width: parent.width
+//            height: parent.height
+
         Rectangle {
-            anchors.fill: parent
-//            anchors.margins: defaultSpacing
-            color: "#2B2B2B"
-            Text {
-                anchors.centerIn: parent
-                text: "Quiver Output"
-                color: "white"
+            width: parent.width
+            height: parent.height
+//            anchors.fill: parent
+
+            color: "#282C34"
+
+            Rectangle {
+                height: quiverTerminal.cursorRectangle.height
+                width: parent.width
+                visible: quiverTerminal.focus
+                y: quiverTerminal.cursorRectangle.y
+                color: "#2C323C"
             }
-            MouseArea {
+
+            TextArea { id: quiverTerminal
+                width: parent.width
+                height: parent.height
+
                 anchors.fill: parent
-                //                onClicked: testWindow.color = "#e0c31e"
+//                anchors.margins: -4
+
+
+                focus: true
+
+                text: "Quiver Output Output Output Output Output Output Output Output Output Output Output Output Output Output Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n "
+
+                //
+                // FIXME: Use regex to highlight all terminal text
+                //
+                //       /(\[(.*?)\])/g    to match every instance of date/time stamp
+                //
+                //
+
+                readOnly: true
+                selectByMouse: true
+//                persistentSelection: true
+
+                font {
+                    family: "Menlo"
+                    styleName: "Regular"
+                    pixelSize: 18
+                }
+//                color: "#DE6D77"
+//                selectionColor: "#3E4450"
+//                selectedTextColor: color
+//                backgroundVisible: false
+                //                textColor: "white"
+                textFormat: TextEdit.PlainText
+                textMargin: 0
+                wrapMode: TextEdit.Wrap
+                frameVisible: false
+                style: TextAreaStyle {
+                    renderType: Text.NativeRendering
+                    textColor: "#DE6D77"
+                    selectionColor: "#3E4450"
+                    selectedTextColor: textColor
+                    backgroundColor: "#2B2B2B"
+                    padding {
+                        top: 0
+                        right: 0
+                        bottom: 0
+                        left: 0
+                    }
+                    // ScrollViewStyle properties
+                    transientScrollBars: true
+                    scrollBarBackground: Rectangle { id: scrollBackground
+                        implicitWidth: 11
+//                        anchors.top:parent.top
+                        //                                implicitHeight: 11
+                        color: styleData.hovered ? Qt.rgba(255,255,255,0.25) : "transparent"
+                    }
+                    handle: Rectangle {
+                        implicitWidth: 9
+                        implicitHeight: 10
+                        anchors.fill: parent
+                        anchors.topMargin: 2
+                        anchors.leftMargin: 2
+                        anchors.bottomMargin: 4
+                        anchors.horizontalCenter: scrollBackground.horizontalCenter
+                        color: "white"
+                        opacity: styleData.hovered ? 0.5 : 0.25
+                        radius: 4
+                    }
+                    //                    frame: Rectangle { color: "transparent"}
+                    corner: Rectangle {}
+                    decrementControl: Item {}
+                    incrementControl: Item {}
+                    frame: Rectangle {
+                        implicitWidth: 10
+                        border.width: 0
+                        border.color: "pink"
+                    }
+
+                }
             }
+
+
+//            MouseArea {
+//                anchors.fill: parent
+//                //                onClicked: testWindow.color = "#e0c31e"
+//            }
             //            Button {
             //                anchors.right: parent.right
             //                anchors.top: parent.top
@@ -327,76 +450,77 @@ DragAndDropArea { id: root
 
 
 
-            ColumnLayout {
-                anchors.fill: parent
-                anchors.margins: 9
-//                RowLayout {
+//            ColumnLayout {
+//                anchors.fill: parent
+//                anchors.margins: 9
+////                RowLayout {
+////                    Layout.fillWidth: true
+////                    TextField {
+////                        id: input
+////                        Layout.fillWidth: true
+////                        focus: true
+////                        onAccepted: {
+////                            // call our evaluation function on root
+////                            root.jsCall(input.text)
+////                        }
+////                    }
+////                    //                      Button {
+////                    //                          text: qsTr("Send")
+////                    //                          onClicked: {
+////                    //                              // call our evaluation function on root
+////                    //                              root.jsCall(input.text)
+////                    //                          }
+////                    //                      }
+////                }
+//                Item {
 //                    Layout.fillWidth: true
-//                    TextField {
-//                        id: input
-//                        Layout.fillWidth: true
-//                        focus: true
-//                        onAccepted: {
-//                            // call our evaluation function on root
-//                            root.jsCall(input.text)
+//                    Layout.fillHeight: true
+//                    Rectangle {
+//                        anchors.fill: parent
+//                        color: '#333'
+//                        border.color: Qt.darker(color)
+//                        opacity: 0.2
+//                        radius: 2
+//                    }
+
+//                    ScrollView {
+//                        id: scrollView
+//                        anchors.fill: parent
+//                        anchors.margins: 9
+//                        ListView {
+//                            id: resultView
+//                            model: ListModel {
+//                                id: outputModel
+//                            }
+//                            delegate: ColumnLayout {
+//                                width: ListView.view.width
+//                                Label {
+//                                    Layout.fillWidth: true
+//                                    color: 'green'
+//                                    text: "> " + model.expression
+//                                }
+//                                Label {
+//                                    Layout.fillWidth: true
+//                                    color: 'blue'
+//                                    text: "" + model.result
+//                                }
+//                                Rectangle {
+//                                    height: 1
+//                                    Layout.fillWidth: true
+//                                    color: '#333'
+//                                    opacity: 0.2
+//                                }
+//                            }
 //                        }
 //                    }
-//                    //                      Button {
-//                    //                          text: qsTr("Send")
-//                    //                          onClicked: {
-//                    //                              // call our evaluation function on root
-//                    //                              root.jsCall(input.text)
-//                    //                          }
-//                    //                      }
 //                }
-                Item {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    Rectangle {
-                        anchors.fill: parent
-                        color: '#333'
-                        border.color: Qt.darker(color)
-                        opacity: 0.2
-                        radius: 2
-                    }
-
-                    ScrollView {
-                        id: scrollView
-                        anchors.fill: parent
-                        anchors.margins: 9
-                        ListView {
-                            id: resultView
-                            model: ListModel {
-                                id: outputModel
-                            }
-                            delegate: ColumnLayout {
-                                width: ListView.view.width
-                                Label {
-                                    Layout.fillWidth: true
-                                    color: 'green'
-                                    text: "> " + model.expression
-                                }
-                                Label {
-                                    Layout.fillWidth: true
-                                    color: 'blue'
-                                    text: "" + model.result
-                                }
-                                Rectangle {
-                                    height: 1
-                                    Layout.fillWidth: true
-                                    color: '#333'
-                                    opacity: 0.2
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+//            }
 
 
         }
-    }
+//    }
+//    }
 
-//    AMFXDebugScreenConsole {}
+    }
 
 }
