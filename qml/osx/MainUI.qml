@@ -112,8 +112,13 @@ DragAndDropArea { id: root
             target: instance
             onProjectsChanged: console.log("Projects list changed!")
 
-            //GREG: change this to use whatever console QML item you devise
-            onProcessOutput: console.log(quiverTerminal.text += text + "\n")
+            onProcessOutput: {
+                    console.log(text);
+                    text = text.replace(/^(.*?) ([^\s]+) \(([^)]*)\)/, '<font color="green">$1</font> <font color="cyan">$2</font> <font color="red">($3)</font>'); //project name, platform, and device profile in parens
+                    text = text.replace(/\[(.+? \d{4})\]/, '<font color="yellow">[$1]</font>'); //timestamp in square brackets
+                    text = text.replace(/\b(file:\/\/(\/[^:]+:\d+:\d+)):/, '<a href="$2">$1</a>:'); //make file:/// links active to open in qt creator
+                    quiverTerminal.append(text);
+            }
         }
 
 
@@ -349,6 +354,8 @@ DragAndDropArea { id: root
 
                 focus: true
 
+                onLinkActivated: instance.openInQtCreator(link)
+
 //                text: "Quiver Output Output Output Output Output Output Output Output Output Output Output Output Output Output Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n Quiver Output \n "
 
                 //
@@ -374,7 +381,7 @@ DragAndDropArea { id: root
 //                selectedTextColor: color
 //                backgroundVisible: false
                 //                textColor: "white"
-                textFormat: TextEdit.PlainText
+                textFormat: TextEdit.RichText
                 textMargin: 0
                 wrapMode: TextEdit.Wrap
                 frameVisible: false

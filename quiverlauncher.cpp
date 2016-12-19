@@ -214,16 +214,16 @@ void QuiverWorker::start_wait_process(QProcess &process) {
         process.start();
         process.waitForStarted();
         process.waitForFinished(-1);
-        qDebug() << QString("%1 %2").arg(process.program()).arg(process.arguments().join(" "));
+        emit process_output(QString("%1 %2").arg(process.program()).arg(process.arguments().join(" ")));
 
-        qDebug() << "stdout:";
+        emit process_output("stdout:");
         foreach (auto line, QString(process.readAllStandardOutput()).split("\n")) {
-                qDebug() << line;
+                emit process_output(line);
         }
 
-        qDebug() << "stderr:";
+        emit process_output("stderr:");
         foreach (auto line, QString(process.readAllStandardError()).split("\n")) {
-                qDebug() << line;
+                emit process_output(line);
         }
 }
 
@@ -503,6 +503,10 @@ void QuiverLauncher::deploy(const QString &project_id) {
 
         setBusy(true);
         emit deploy_in_thread(project);
+}
+
+void QuiverLauncher::openInQtCreator(const QString &filepath) {
+        QProcess::startDetached(QString("%1/Qt/Qt Creator.app/Contents/MacOS/Qt Creator").arg(QDir::homePath()), QStringList() << "-client" << filepath);
 }
 
 void QuiverLauncher::launch(const QString &project_id) {

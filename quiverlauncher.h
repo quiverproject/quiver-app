@@ -77,6 +77,7 @@ public slots:
         void launch(const QString &project_id);
         void remove(const QString &project_id);
         void deploy(const QString &project_id);
+        void openInQtCreator(const QString &filepath);
 private slots:
 private:
         QList<Project *> m_projects;
