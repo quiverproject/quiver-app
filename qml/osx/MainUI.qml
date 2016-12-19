@@ -354,7 +354,9 @@ DragAndDropArea { id: root
                 //
                 // FIXME: Use regex to highlight all terminal text
                 //
-                //       /(\[(.*?)\])/g    to match every instance of date/time stamp
+                //    /(\[(.*?)\])/g    works to match every instance of date/time stamp in square brackets
+                //
+                //    /\(([^\)]+)\)/g    works to match every instance of device profile in parens
                 //
                 //
 
