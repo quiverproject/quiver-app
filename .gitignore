@@ -31,6 +31,9 @@ Makefile*
 *.qmlproject.user
 *.qmlproject.user.*
 
+# Qt Quick QML engine
+*.qmlc
+
 build-*
 
 .DS_Store
