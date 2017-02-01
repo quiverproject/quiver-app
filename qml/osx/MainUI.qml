@@ -115,8 +115,8 @@ DragAndDropArea { id: root
             onProcessOutput: {
                     console.log(text);
                     text = text.replace(/^(.*?) ([^\s]+) \(([^)]*)\)/, '<font color="green">$1</font> <font color="cyan">$2</font> <font color="red">($3)</font>'); //project name, platform, and device profile in parens
-                    text = text.replace(/\[(.+? \d{4})\]/, '<font color="yellow">[$1]</font>'); //timestamp in square brackets
-                    text = text.replace(/\b(file:\/\/(\/[^:]+:\d+:\d+)):/, '<a href="$2">$1</a>:'); //make file:/// links active to open in qt creator
+                    text = text.replace(/\[(.+? \d{4})\]/, '<font color="#fff">[$1]</font>'); //timestamp in square brackets
+                    text = text.replace(/\b(file:\/\/(\/[^:]+:\d+:\d+)):/, '<a href="$2"><font color="#558EFC">$1</font></a>:'); //make file:/// links active to open in qt creator
                     quiverTerminal.append(text);
             }
         }
@@ -237,7 +237,7 @@ DragAndDropArea { id: root
                                     background: Rectangle {
                                         width: 75
                                         height: 12
-                                        color: "#616161"
+                                        color: control.pressed ? "#616161" : "black"
                                         radius: 4
                                     }
                                     label: Text {
